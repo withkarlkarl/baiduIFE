@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EChart 1 Bar and Line</title>
+    <!--引入EChart-->
+    <script src="../ECharts/echarts.js"></script>
+</head>
+<body style="background-image: url(Jaychou.jpg); background-position: center; background-size: cover;">
+    <!--EChart的DOM-->
+    <div id="main" style="width: 900px; height: 600px; margin: auto; margin-top: 10;"></div>
+    <script type="text/javascript">
+        //基于DOM初始化EChart
+        var myChart = echarts.init(document.getElementById('main'));
+
+        //指定表的配置项和数据
+        var option = {
+            title: {
+                text: '周杰伦历年专辑销量'
+            },
+            tooltip: {
+                trigger: 'axis',
+            },
+            backgroundColor: '#B0C4DE',
+            legend: {
+                data: ['销量', '发行年份']
+            },
+
+            xAxis: {
+                data: ['jay', '范特西', '八度空间', '叶惠美', '七里香', '十一月的肖邦', '依然范特西', '我很忙']
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    min: 0,
+                    max: 400,
+                    interval: 50,
+                    axisLabel: {
+                        formatter: '{value}万张'
+                    }
+                },
+                {
+                    type: 'value',
+                    min: 2000,
+                    max: 2008,
+                    interval: 1,
+                    axisLabel: {
+                        formatter: '{value}年'
+                    }
+                },
+            ],
+            series: [{
+                itemStyle: {
+                    normal: {
+                        color: '#00008B',
+                        shadowBlur: 50,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                },
+                name: '销量',
+                type: 'bar',
+                data: [50, 170, 220, 300, 350, 270, 360, 220]
+            },
+            {
+                name: '发行年份',
+                type: 'line',
+                yAxisIndex: 1,
+                data: [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007]
+            },]
+        };
+
+        //使用以上的配置显示图表
+        myChart.setOption(option);
+    </script>
+</body>
+</html>
