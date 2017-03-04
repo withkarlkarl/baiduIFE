@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Jad3nYan9's little car</title>
+    <style>
+        body {
+            color: #000;
+            font-family:Monospace;
+            font-size:13px;
+            text-align:center;
+            font-weight: bold;
+
+            background-color: #fff;
+            margin: 0px;
+            overflow: hidden;
+        }
+    </style>
+    <script type="text/javascript" src="ThreeJs/three.js"></script>
+    <script src="Controls/TrackballControls.js"></script>
+    <script>
+        /*
+         *
+         * */
+        var camera, controls, scene, renderer; //直接先喊出这些参数的名字，把他们全局了
+        init();
+        animate();
+
+        function init() {
+            /*
+             *
+             *====== Camera ======
+             *
+             */
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000); //第二个参数没有写死哦
+            camera.position.set(10, 6, 8);
+
+
+
+
+
+            /*
+             *
+             *====== TrackBall ======
+             *
+             */
+            controls = new THREE.TrackballControls( camera );
+
+            controls.rotateSpeed = 1.0;
+            controls.zoomSpeed = 1.2;
+            controls.panSpeed = 0.8;
+            controls.noZoom = false;
+            controls.noPan = false;
+            controls.staticMoving = true;
+            controls.dynamicDampingFactor = 0.3;
+            controls.keys = [ 65, 83, 68 ];
+            controls.addEventListener( 'change', function () {
+                renderer.render( scene, camera );
+            } );
+
+
+
+
+
+
+            /*
+             *
+             *====== World ======
+             *
+             */
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2( 0xcccccc, 0.002 );
+
+            /*
+            * 车身
+            */
+
+            //引入纹理
+            var cubeTexture = [];
+            for (i = 1; i < 7; i++) {
+                cubeTexture.push(
+                    new THREE.MeshLambertMaterial({
+                        map: new THREE.ImageUtils.loadTexture('3_Advanced_Car/img/' + i + '.jpg',
+                            {}, function () {
+                                renderer.render(scene, camera);
+                            }
+                        ),
+                        overdraw: true,
+                        side: THREE.DoubleSide
+                    }));
+            }
+
+            //车身形状
+            var cube =   new THREE.Mesh(
+                new THREE.CubeGeometry(2, 1, 1),
+                new THREE.MeshFaceMaterial(cubeTexture)
+            );
+            cube.castShadow = true; //阴影
+            scene.add(cube);
+
+
+            /*
+             * 半球·车头
+             */
+
+            //引入纹理
+            var shiniBallTexture = new THREE.ImageUtils.loadTexture('3_Advanced_Car/img/cell.jpg', {}, function () {
+                renderer.render(scene, camera);
+            });
+            shiniBallTexture.wrapS = shiniBallTexture.wrapT = THREE.RepeatWrapping;
+            shiniBallTexture.repeat.set(2, 2);
+            //形状
+            var shiniBall = new THREE.Mesh(
+                new THREE.SphereGeometry(1/2, 18, 12, Math.PI / 2, Math.PI),
+                new THREE.MeshLambertMaterial({map: shiniBallTexture})
+            );
+            //位置
+            shiniBall.position.set(1, 0, 0);
+            shiniBall.castShadow = true; //阴影
+            scene.add(shiniBall);
+
+
+            /*
+             * 车棚
+             */
+
+            //引入纹理
+            var enclosingTexture = new THREE.ImageUtils.loadTexture('3_Advanced_Car/img/canvas.jpg', {}, function () {
+                renderer.render(scene, camera);
+            })
+            //材质
+            var enclosing = new THREE.Mesh(
+                new THREE.CylinderGeometry(1/2, 1/2, 2, 20, 3),
+                new THREE.MeshLambertMaterial({map: enclosingTexture})
+            );
+            //位置
+            enclosing.rotation.z = 1/2 * Math.PI;
+            enclosing.position.y = 1/2;
+            enclosing.castShadow = true; //阴影
+            scene.add(enclosing);
+
+
+            /*
+             * 轮胎
+             */
+
+            //轮胎的形状
+            var tyreGeometry = new THREE.TorusGeometry(1/4, 1/8, 8, 16);
+            //引入纹理
+            var tyreMaterialTexture = new THREE.ImageUtils.loadTexture('3_Advanced_Car/img/tyre.jpg', {}, function () {
+                renderer.render(scene, camera) //在回调函数里实现重新绘制画面
+            })
+            //轮胎都材质
+            var tyreMaterial2 = new THREE.MeshLambertMaterial({map: tyreMaterialTexture});//设置轮胎材质
+
+            var torus1 = new THREE.Mesh(tyreGeometry, tyreMaterial2);
+            torus1.position.set(0.7, -1/2, 1/2);
+            torus1.castShadow = true; //阴影
+            scene.add(torus1);
+
+            var torus2 = new THREE.Mesh(tyreGeometry, tyreMaterial2);
+            torus2.position.set(-0.7, -1/2, 1/2);
+            torus2.castShadow = true; //阴影
+            scene.add(torus2);
+
+            var torus3 = new THREE.Mesh(tyreGeometry, tyreMaterial2);
+            torus3.position.set(0.7, -1/2, -1/2);
+            torus3.castShadow = true; //阴影
+            scene.add(torus3);
+
+            var torus4 = new THREE.Mesh(tyreGeometry, tyreMaterial2);
+            torus4.position.set(-0.7, -1/2, -1/2);
+            torus4.castShadow = true; //阴影
+            scene.add(torus4);
+            //备用轮胎
+            var torus5 = new THREE.Mesh(tyreGeometry, tyreMaterial2);
+            torus5.position.set(-9/8, 0, 0);
+            torus5.rotation.y = 1/2 * Math.PI;
+            torus5.castShadow = true; //阴影
+            scene.add(torus5);
+
+
+            /*
+             * 棱形的雨滴
+             */
+
+            var dropMaterial = new THREE.MeshBasicMaterial({color: 0x00ffff, shade: THREE.flatShading, side:THREE.DoubleSide});
+            // Don know why 为的雨滴用了Phong材质后一片漆黑？？
+            var dropGeometry = new THREE.Geometry();
+            dropGeometry.vertices.push(new THREE.Vector3(1/8, 1/2, 0)); //先画点
+            dropGeometry.vertices.push(new THREE.Vector3(1/8, 0, 0));
+            dropGeometry.vertices.push(new THREE.Vector3(1/4, 1/4, 0));
+            dropGeometry.vertices.push(new THREE.Vector3(0, 1/4, 0));
+            dropGeometry.faces.push(new THREE.Face3(1, 2, 3)); //后把点连成面，Face3里面的参数是点的序号（index）
+            dropGeometry.faces.push(new THREE.Face3(0, 3, 2));
+
+            //重复500遍
+            for ( var i = 0; i < 500; i ++ ) {
+
+                var rainDrop = new THREE.Mesh( dropGeometry, dropMaterial );
+                rainDrop.position.x = ( Math.random() - 0.5 ) * 30;
+                rainDrop.position.y = ( Math.random() - 0.5 ) * 30;
+                rainDrop.position.z = ( Math.random() - 0.5 ) * 30;
+                rainDrop.updateMatrix();
+                rainDrop.matrixAutoUpdate = false;
+                scene.add( rainDrop );
+
+            }
+
+
+            /*
+             * 雪球，雨夹雪哈哈哈
+             */
+
+            var geometry = new THREE.SphereGeometry(1/6, 12, 8);
+            var material =  new THREE.MeshPhongMaterial( { color:0xffffff, shading: THREE.FlatShading } );
+
+            for ( var i = 0; i < 300; i ++ ) {
+
+                var mesh = new THREE.Mesh( geometry, material );
+                mesh.position.x = ( Math.random() - 0.5 ) * 30;
+                mesh.position.y = ( Math.random() - 0.5 ) * 30;
+                mesh.position.z = ( Math.random() - 0.5 ) * 30;
+                mesh.updateMatrix();
+                mesh.matrixAutoUpdate = false;
+                scene.add( mesh );
+
+            }
+
+
+            /*
+             * 草坪
+             */
+
+            var textureGrass = new THREE.ImageUtils.loadTexture("2_grass.jpg", {}, function () {
+                renderer.render(scene, camera);//在回调函数中实现重新绘制画面
+            });//导入草皮素材
+            textureGrass.wrapS = textureGrass.wrapT = THREE.RepeatWrapping;//两个方向都重复
+            textureGrass.repeat.set(4, 4);//两个方向上都重复4次
+            var planeGrassGeometry = new THREE.PlaneGeometry(20, 20, 10, 10);//设置草皮形状
+            var planeGrassMaterial = new THREE.MeshLambertMaterial({map: textureGrass});//设置草皮材质
+            var planeGrass = new THREE.Mesh(planeGrassGeometry, planeGrassMaterial);//设置草皮网格
+            planeGrass.receiveShadow = true;//草皮接受阴影
+            planeGrass.rotation.x = -1/2 * Math.PI;//草皮旋转
+            planeGrass.position.set(-3/2, -1, 0);//草皮位置
+            scene.add(planeGrass);//草皮添加到景色里
+
+
+
+
+
+            /*
+             *
+             *====== light ======
+             *
+             */
+            //环境光
+            var lightEnvironment = new THREE.AmbientLight(0x1c1c1c);
+            scene.add(lightEnvironment);
+            //聚光灯
+            var lightSpot = new THREE.SpotLight(0xffffff, 1, 100, Math.PI / 6, 25);
+            lightSpot.position.set(8, 5, -2);
+            lightSpot.target.position.set(0, 0, 0);
+            lightSpot.castShadow = true;  //接受阴影
+            scene.add(lightSpot);
+            //别人的demo里面光线全都用的light，反正可以覆盖，倒也是省事
+            light = new THREE.DirectionalLight( 0xffffff );
+            light.position.set( 1, 1, 1 );
+            scene.add( light );
+
+            light = new THREE.DirectionalLight( 0x002288 );
+            light.position.set( -1, -1, -1 );
+            scene.add( light );
+
+
+
+
+
+            //axis 红色x 绿色y 蓝色z
+            axis = new THREE.AxisHelper(4);
+            scene.add(axis);
+
+
+
+
+
+            /*
+             *
+             *====== renderer ======
+             *
+             */
+            renderer = new THREE.WebGLRenderer({  //这个方法是获取canvas
+                canvas : document.getElementById('mainCanvas'),
+                antialias: false
+            });
+            renderer.setClearColor( scene.fog.color );
+            renderer.setPixelRatio( window.devicePixelRatio ); //设定成和电脑一样的分辨率
+            renderer.setSize( window.innerWidth, window.innerHeight );  //设定成和窗口一样的宽度、高度
+            renderer.shadowMapEnabled = true; //显示阴影
+            //这应该就是捕捉屏幕上的事件把
+            window.addEventListener( 'resize', onWindowResize, false );
+
+//            render(); //感觉之间用renderer.render要好理解一些
+            renderer.render( scene, camera );
+        }
+
+
+
+
+        //在window.addEventListener里面调用这个方法
+        function onWindowResize() { //这个方法重点英国在controls.handleResize，可以理解为TrackBall的一个组件吧
+
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize( window.innerWidth, window.innerHeight ); //这片code里面任何地方都不能写死width和height，因为上下文都是window...
+            controls.handleResize();
+//            render();
+            renderer.render( scene, camera );
+        }
+
+
+
+
+
+        function animate() { //这个方法和浏览器的显示帧数有关，这里暂时理解为跟随TrackBall的节奏调整画面帧数吧
+
+            requestAnimationFrame( animate );
+            controls.update();
+        }
+
+
+
+//        function render() { //这个方法是在当下的script中申明一个render方法来调用renderer的render方法，例子：用遥控器的开关控制电视机的开关
+//
+//            renderer.render( scene, camera );
+//        }
+
+
+    </script>
+</head>
+<body onload="init()">
+    <div>
+        <canvas id="mainCanvas"></canvas>
+    </div>
+
+
+</body>
+
+</html>
+
+
+
+
