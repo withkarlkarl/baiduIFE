@@ -18,8 +18,16 @@
     </style>
     <script type="text/javascript" src="ThreeJs/three.js"></script>
     <script src="Controls/TrackballControls.js"></script>
+
+</head>
+<body onload="init()">
+    <div>
+        <canvas id="mainCanvas"></canvas>
+    </div>
     <script>
         /*
+         *
+         * 首先，这个script要放在body的尾部，放在head里面则TrackBall转不动
          *
          * */
         var camera, controls, scene, renderer; //直接先喊出这些参数的名字，把他们全局了
@@ -54,9 +62,7 @@
             controls.staticMoving = true;
             controls.dynamicDampingFactor = 0.3;
             controls.keys = [ 65, 83, 68 ];
-            controls.addEventListener( 'change', function () {
-                renderer.render( scene, camera );
-            } );
+            controls.addEventListener( 'change', render);
 
 
 
@@ -72,8 +78,8 @@
             scene.fog = new THREE.FogExp2( 0xcccccc, 0.002 );
 
             /*
-            * 车身
-            */
+             * 车身
+             */
 
             //引入纹理
             var cubeTexture = [];
@@ -300,8 +306,8 @@
             //这应该就是捕捉屏幕上的事件把
             window.addEventListener( 'resize', onWindowResize, false );
 
-//            render(); //感觉之间用renderer.render要好理解一些
-            renderer.render( scene, camera );
+            render(); //感觉之间用renderer.render要好理解一些
+//            renderer.render( scene, camera );
         }
 
 
@@ -314,8 +320,8 @@
             camera.updateProjectionMatrix();
             renderer.setSize( window.innerWidth, window.innerHeight ); //这片code里面任何地方都不能写死width和height，因为上下文都是window...
             controls.handleResize();
-//            render();
-            renderer.render( scene, camera );
+            render();
+//            renderer.render( scene, camera );
         }
 
 
@@ -330,19 +336,13 @@
 
 
 
-//        function render() { //这个方法是在当下的script中申明一个render方法来调用renderer的render方法，例子：用遥控器的开关控制电视机的开关
-//
-//            renderer.render( scene, camera );
-//        }
+        function render() { //这个方法是在当下的script中申明一个render方法来调用renderer的render方法，例子：用遥控器的开关控制电视机的开关
+
+            renderer.render( scene, camera );
+        }
 
 
     </script>
-</head>
-<body onload="init()">
-    <div>
-        <canvas id="mainCanvas"></canvas>
-    </div>
-
 
 </body>
 
