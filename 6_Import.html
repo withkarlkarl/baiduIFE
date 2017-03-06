@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>task 6 import</title>
+    <script type="text/javascript" src="ThreeJs/three.js"></script>
+    <script type="text/javascript" src="stats.min.js"></script>
+    <script type="text/javascript" src="Controls/TrackballControls.js"></script>
+    <script type="text/javascript" src="OBJLoader.js"></script>
+    <script type="text/javascript" src="MTLLoader.js"></script>
+</head>
+<body onload="init()" style="margin: 0; padding: 0;">
+<div style='overflow: hidden;'>
+    <canvas id="mainCanvas"></canvas>
+</div>
+<script>
+    var scene = null;
+    var camera = null;
+    var renderer = null;
+    var stat = null;
+    var controls = null;
+
+    var light = null;
+    var cube, shiniBall, enclosing;
+    var torus1, torus2, torus3, torus4, torus5;
+    var isMoving = false;
+    var v = 0;
+    var idww, idss;
+
+    init();
+    animate();
+
+    function init() {
+        //Renderer
+        renderer = new THREE.WebGLRenderer({
+            canvas: document.getElementById('mainCanvas')
+        });
+        renderer.setClearColor(0x000000);
+        renderer.setPixelRatio( window.devicePixelRatio ); //设定成和电脑一样的分辨率
+        renderer.setSize( window.innerWidth, window.innerHeight );  //设定成和窗口一样的宽度、高度
+        renderer.shadowMapEnabled = true; //显示阴影
+
+        //Scene
+        scene = new THREE.Scene();
+
+        //透视相机
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.set(18, 12, 15);
+        camera.lookAt(scene.position);
+        scene.add(camera);
+
+        //Stat
+        stat = new Stats();
+        stat.domElement.style.position = 'absolute';
+        stat.domElement.style.top = '0px';
+        stat.domElement.style.left = '0px';
+        document.body.appendChild(stat.domElement);
+
+        //control ball
+        controls = new THREE.TrackballControls(camera);
+        controls.rotateSpeed = 1.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+        controls.noZoom = false;
+        controls.noPan = false;
+        controls.staticMoving = true;
+        controls.dynamicDampingFactor = 0.3;
+        controls.keys =[65, 83, 68];
+        controls.addEventListener('change', function () {
+            renderer.render(scene, camera);
+        });
+
+
+        //Cube 车身
+        cube = new THREE.Mesh(new THREE.CubeGeometry(2, 1, 1),
+            new THREE.MeshLambertMaterial({
+                color: 0xE6E6FA
+            })
+        );
+        cube.castShadow = true; //阴影
+        scene.add(cube);
+
+        //半球·车头
+        shiniBall = new THREE.Mesh(
+            new THREE.SphereGeometry(1/2, 18, 12, Math.PI / 2, Math.PI),
+            new THREE.MeshPhongMaterial({
+                color: 0x4169E1,
+                specular: 0xffffff,
+                shininess: 100,
+                side: THREE.DoubleSide
+            })
+        );
+        shiniBall.position.set(1, 0, 0);
+        shiniBall.castShadow = true; //阴影
+        scene.add(shiniBall);
+
+        //车棚
+        enclosing = new THREE.Mesh(
+            new THREE.CylinderGeometry(1/2, 1/2, 2, 20, 3),
+            new THREE.MeshPhongMaterial({
+                color: 0x00ff00,
+                specular:0xffffff,
+                shininess:100
+            })
+        );
+        enclosing.rotation.z = 1/2 * Math.PI;
+        enclosing.position.y = 1/2;
+        enclosing.castShadow = true; //阴影
+        scene.add(enclosing);
+
+        //Torus 轮胎
+        //轮胎的形状
+        var tyreGeometry = new THREE.TorusGeometry(1/4, 1/8, 8, 16);
+        //轮胎的材质
+        var tyreMaterial = new THREE.MeshPhongMaterial({
+            color: 0x000080,
+            specular: 0x00BFFF,
+            shininess: 100
+        });
+
+        torus1 = new THREE.Mesh(tyreGeometry, tyreMaterial);
+        torus1.position.set(0.7, -1/2, 1/2);
+        torus1.castShadow = true; //阴影
+        scene.add(torus1);
+
+        torus2 = new THREE.Mesh(tyreGeometry, tyreMaterial);
+        torus2.position.set(-0.7, -1/2, 1/2);
+        torus2.castShadow = true; //阴影
+        scene.add(torus2);
+
+        torus3 = new THREE.Mesh(tyreGeometry, tyreMaterial);
+        torus3.position.set(0.7, -1/2, -1/2);
+        torus3.castShadow = true; //阴影
+        scene.add(torus3);
+
+        torus4 = new THREE.Mesh(tyreGeometry, tyreMaterial);
+        torus4.position.set(-0.7, -1/2, -1/2);
+        torus4.castShadow = true; //阴影
+        scene.add(torus4);
+        //备用轮胎
+        torus5 = new THREE.Mesh(tyreGeometry, tyreMaterial);
+        torus5.position.set(-9/8, 0, 0);
+        torus5.rotation.y = 1/2 * Math.PI;
+        torus5.castShadow = true; //阴影
+        scene.add(torus5);
+
+
+        //增加一个草坪
+        var textureGrass = new THREE.ImageUtils.loadTexture("2_grass.jpg", {}, function () {
+            renderer.render(scene, camera);//在回调函数中实现重新绘制画面
+        });//导入草皮素材
+        textureGrass.wrapS = textureGrass.wrapT = THREE.RepeatWrapping;//两个方向都重复
+        textureGrass.repeat.set(4, 4);//两个方向上都重复4次
+        var planeGrassGeometry = new THREE.PlaneGeometry(200, 200, 10, 10);//设置草皮形状
+        var planeGrassMaterial = new THREE.MeshLambertMaterial({map: textureGrass});//设置草皮材质
+        var planeGrass = new THREE.Mesh(planeGrassGeometry, planeGrassMaterial);//设置草皮网格
+        planeGrass.receiveShadow = true;//草皮接受阴影
+        planeGrass.rotation.x = -1/2 * Math.PI;//草皮旋转
+        planeGrass.position.set(-3/2, -1, 0);//草皮位置
+        scene.add(planeGrass);//草皮添加到景色里
+
+        //Importing
+//        var loader = new THREE.OBJLoader();
+//        loader.addEventListener('load', function () {
+//            var obj = event.content;
+//            mesh = obj;
+//            scene.add(obj);
+//        });
+//        loader.load('Material/Low_poly_trees/lp_trees.obj', 'Material/Low_poly_trees/lp_trees.mtl');
+
+        // material loader
+        var mtlLoader = new THREE.MTLLoader();
+        mtlLoader.setPath('Material/Low_poly_trees/');
+        mtlLoader.load('lp_trees.mtl', function(materials) {
+            materials.preload();
+            // model loader
+            var objLoader = new THREE.OBJLoader();
+            objLoader.setMaterials(materials);
+            objLoader.setPath('Material/Low_poly_trees/');
+            for (j = 0; j < 4; j++) {
+                objLoader.load('lp_trees.obj', function ( object ) {
+                    for (i = 0; i < 7; i++) {
+                        object.children[2].position.y = -3/2;
+                        object.children[2].position.x = ( Math.random() - 0.5) * 80;
+                        object.children[2].position.z = ( Math.random() - 0.5) * 100;
+                        scene.add( object.children[2] );
+                    }
+                });
+            }
+
+        });
+
+        //加光源
+        //环境光
+        var lightEnvironment = new THREE.AmbientLight(0x1c1c1c);
+        scene.add(lightEnvironment);
+        //聚光灯
+        var lightSpot = new THREE.SpotLight(0xffffff, 1.5, 100, Math.PI / 6, 25);
+        lightSpot.position.set(30, 15, -8);
+        lightSpot.target.position.set(0, 0, 0);
+        lightSpot.castShadow = true;  //接受阴影
+        scene.add(lightSpot);
+
+        light = new THREE.DirectionalLight( 0xD3D3D3 );
+        light.position.set( 1, 1, 1 );
+        scene.add( light );
+
+        light = new THREE.DirectionalLight( 0x191970 );
+        light.position.set( -1/2, 1/2, 1/2 );
+        scene.add( light );
+
+        light = new THREE.DirectionalLight( 0xFFD700 );
+        light.position.set( 0, -1, 0 );
+        scene.add( light );
+
+        //axis 红色x 绿色y 蓝色z
+        axis = new THREE.AxisHelper(20);
+        scene.add(axis);
+
+        //
+        window.addEventListener('resize', onWindowResize, false);
+
+        //Render
+        renderer.render(scene, camera);
+
+    }
+
+    //在window.addEventListener里面调用这个方法
+    function onWindowResize() { //这个方法重点英国在controls.handleResize，可以理解为TrackBall的一个组件吧
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight); //这片code里面任何地方都不能写死width和height，因为上下文都是window...
+        controls.handleResize();
+//        render();
+        renderer.render( scene, camera );
+    }
+
+
+
+    function animate() { //这个方法和浏览器的显示帧数有关，这里暂时理解为跟随TrackBall的节奏调整画面帧数吧
+
+        requestAnimationFrame( animate );
+        controls.update();
+    }
+
+
+
+    document.onkeydown = function (event) {
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        if (e && e.keyCode == 87) { //按下w要做的事情
+            v = 0.02;
+
+            if (!isMoving) { //动静开关
+                isMoving = true;
+                idww = requestAnimationFrame(wwww);
+            } else {
+                isMoving = false;}
+        }
+
+
+        if (e && e.keyCode == 83) { //按下s要做的事情
+            v = 0.02;
+
+            if (!isMoving) { //动静开关
+                isMoving = true;
+                idss = requestAnimationFrame(ssss);
+            } else {
+                isMoving = false;}
+        }
+
+
+        if (e && e.keyCode == 65) { //按下a要做的事情
+            aaaa();
+        }
+
+
+        if (e && e.keyCode == 68) { //按下a要做的事情
+            dddd();
+        }
+    }
+
+    //按下w要做的事情
+    function wwww() {
+        torus1.rotation.z = (torus1.rotation.z - 0.02) % (Math.PI * 2);
+        torus2.rotation.z = (torus2.rotation.z - 0.02) % (Math.PI * 2);
+        torus3.rotation.z = (torus3.rotation.z - 0.02) % (Math.PI * 2);
+        torus4.rotation.z = (torus4.rotation.z - 0.02) % (Math.PI * 2);
+
+        if (isMoving) {
+            torus1.position.x += v;
+            torus2.position.x += v;
+            torus3.position.x += v;
+            torus4.position.x += v;
+            cube.position.x += v;
+            shiniBall.position.x += v;
+            enclosing.position.x += v;
+            torus5.position.x += v;
+
+            renderer.render(scene, camera);
+            stat.update();
+
+            idww = requestAnimationFrame(wwww);
+        } else {
+            cancelAnimationFrame(idww);
+        }
+
+    }
+
+    //按下s要做的事情
+    function ssss() {
+        torus1.rotation.z = (torus1.rotation.z + 0.02) % (Math.PI * 2);
+        torus2.rotation.z = (torus2.rotation.z + 0.02) % (Math.PI * 2);
+        torus3.rotation.z = (torus3.rotation.z + 0.02) % (Math.PI * 2);
+        torus4.rotation.z = (torus4.rotation.z + 0.02) % (Math.PI * 2);
+
+        if (isMoving) {
+            torus1.position.x -= v;
+            torus2.position.x -= v;
+            torus3.position.x -= v;
+            torus4.position.x -= v;
+            cube.position.x -= v;
+            shiniBall.position.x -= v;
+            enclosing.position.x -= v;
+            torus5.position.x -= v;
+
+            renderer.render(scene, camera);
+            stat.update();
+
+            idss = requestAnimationFrame(ssss);
+        } else {
+            cancelAnimationFrame(idss);
+        }
+
+    }
+
+    //按下a要做的事情
+    function aaaa() {
+        if (torus1.rotation.y < 1.2) {
+            torus1.rotation.y = (torus1.rotation.y + 0.3) % (Math.PI * 2);//前轮
+            torus3.rotation.y = (torus3.rotation.y + 0.3) % (Math.PI * 2);//前轮
+
+            torus2.rotation.y = (torus2.rotation.y + 0.1) % (Math.PI * 2);
+            torus4.rotation.y = (torus4.rotation.y + 0.1) % (Math.PI * 2);
+            renderer.render(scene, camera);
+        }
+    }
+
+    //按下d要做的事情
+    function dddd() {
+        if (torus1.rotation.y > -1.2) {
+            torus1.rotation.y = (torus1.rotation.y - 0.3) % (Math.PI * 2);//前轮
+            torus3.rotation.y = (torus3.rotation.y - 0.3) % (Math.PI * 2);//前轮
+
+            torus2.rotation.y = (torus2.rotation.y - 0.1) % (Math.PI * 2);
+            torus4.rotation.y = (torus4.rotation.y - 0.1) % (Math.PI * 2);
+            renderer.render(scene, camera);
+        }
+    }
+</script>
+</body>
+</html>
