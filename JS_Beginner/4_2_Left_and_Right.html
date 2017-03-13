@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>2nd Left and Right</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Monospace;
+            font-size: 22px;
+            overflow: hidden;
+        }
+        .main {
+            margin: 10px 0 10px 10px;
+        }
+        ul {
+            margin: 10px 0;
+            padding: 0;
+        }
+        ul > li {
+            list-style: none;
+            background-color: #ff5500;
+            display: inline;
+            margin-left: 10px;
+            margin-top: 10px;
+            width: 100%;
+            word-wrap: break-word;
+            word-break: keep-all;
+        }
+        li:first-child {
+            margin-left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <label><input id="aqi-input" type="text"></label>
+        <button id="left_in">左侧入</button>
+        <button id="right_in">右侧入</button>
+        <button id="left_out" style="margin-left: 20px">左侧出</button>
+        <button id="right_out">出侧出</button>
+        <ul id="output"></ul>
+    </div>
+
+    <script>
+        var ulOutput = document.getElementById('output');
+        var liOutput = ulOutput.getElementsByTagName('li');
+        var allLi = [];
+
+        function newNode() {
+            var value = document.getElementById('aqi-input').value;
+            var newList = document.createElement('li');
+            var newText = document.createTextNode(value);
+            newList.appendChild(newText);
+            return newList;
+        }
+
+        function leftIn() {
+            var li = newNode();
+            if (li.innerHTML) {
+                allLi.unshift(li);
+                allLi.forEach(render);
+            } else {
+                console.log('Nothing has inputed');
+            }
+        }
+
+        function rightIn() {
+            var li = newNode();
+            if (li.innerHTML) {
+                allLi.push(li);
+                allLi.forEach(render);
+            } else {
+                console.log('Nothing has inputed');
+            }
+        }
+        
+        function leftOut() {
+            if (liOutput.length){
+                ulOutput.removeChild(ulOutput.firstChild);
+            } else {
+                console.log('no li under ul.')
+            }
+        }
+
+        function rightOut() {
+            if (liOutput.length) {
+                ulOutput.removeChild(ulOutput.lastChild);
+            } else {
+                console.log('no li under ul.')
+            }
+        }
+
+        function render(node) {
+            ulOutput.appendChild(node);
+        }
+
+        function main() {
+            document.getElementById('left_in').onclick = leftIn;
+            document.getElementById('right_in').onclick = rightIn;
+            document.getElementById('left_out').onclick = leftOut;
+            document.getElementById('right_out').onclick = rightOut;
+        }
+
+        main();
+    </script>
+</body>
+</html>

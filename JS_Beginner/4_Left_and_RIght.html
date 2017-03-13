@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Left and Right</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Monospace;
+            font-size: 22px;
+        }
+        .main {
+            margin: 10px 0 10px 10px;
+        }
+        ul {
+            margin: 10px 0;
+            padding: 0;
+        }
+        ul > li {
+            list-style: none;
+            background-color: #ff5500;
+            display: inline;
+            margin-left: 10px;
+        }
+        li:first-child {
+            margin-left: 0;
+        }
+    </style>
+
+
+</head>
+<body>
+
+    <div class="main">
+        <label><input id="aqi-input" type="text"></label>
+        <button id="left_in">左侧入</button>
+        <button id="right_in">右侧入</button>
+        <button id="left_out" style="margin-left: 20px">左侧出</button>
+        <button id="right_out">出侧出</button>
+        <ul id="output"></ul>
+    </div>
+
+    <script>
+        main();
+        var content;
+        function newNode() {
+            content = document.getElementById('aqi-input').value; //把input的值抓住
+            newList = document.createElement('li'); //新建li节点
+            newText = document.createTextNode(content);//把input的值和和li绑定在一起
+            newList.appendChild(newText);
+            return newList;//返回li节点
+
+        }
+
+        var outputUl = document.getElementById('output');
+        if (!outputUl) {
+            alert('Please input something');
+        }
+
+        var node;
+        function leftIn() {
+            node = newNode(); //获取生成的li节点
+            outputUl.insertBefore(node, outputUl.childNodes[0]);//新的li节点插入到第一个li之前
+        }
+
+        function rightIn() {
+            node = newNode();//获取生成的li节点
+            outputUl.appendChild(node);//新的li节点添加到末尾
+        }
+
+        function letfOut() {
+            var firstLi = outputUl.childNodes[0]; //获取第ul下的一个li
+            alert(firstLi.innerHTML);
+            outputUl.removeChild(firstLi);
+        }
+
+        function rightout() {
+            var lastLi = outputUl.lastChild;//获取ul下的最末一个li
+            alert(lastLi.innerHTML);
+            outputUl.removeChild(lastLi);
+        }
+
+        function main() {
+            document.getElementById('left_in').onclick = leftIn;
+            document.getElementById('right_in').onclick = rightIn;
+            document.getElementById('left_out').onclick = letfOut;
+            document.getElementById('right_out').onclick = rightout;
+        }
+
+    </script>
+
+</body>
+</html>
